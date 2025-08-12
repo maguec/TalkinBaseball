@@ -1,0 +1,257 @@
+sources:
+
+  statcast:
+    kind: postgres
+    host: 127.0.0.1
+    port: 5432
+    database: statcast
+    user: postgres
+    password: calripken
+
+  funnotes:
+    kind: bigtable
+    project: mague-tf
+    instance: talkinbaseball
+
+tools:
+
+  get_fun_notes_for_player:
+    kind: bigtable-sql
+    source: funnotes
+    description: Given a player it return fun notes from the database
+    parameters:
+    - description: player id
+      name: player_id
+      type: string
+    statement: SELECT notes FROM fun_notes WHERE CAST (player_id AS STRING)=@player_id
+
+  lookup_player_by_lastname:
+    description: Given just a single name assume it's the last name downcase it and find the player if there's more than one answer then clarify and ask for the first name confirmation
+    kind: postgres-sql
+    parameters:
+    - description: last name
+      name: name_last
+      type: string
+    source: statcast
+    statement: SELECT id, name_first, name_last FROM players WHERE lower(name_last) = lower($1)
+  lookup_player_by_first_and_lastname:
+    description: Given just the first and last name downcase it and find the player and return the id
+    kind: postgres-sql
+    parameters:
+    - description: last name
+      name: name_last
+      type: string
+    - description: first name
+      name: name_first
+      type: string
+    source: statcast
+    statement: SELECT id, name_first, name_last FROM players WHERE lower(name_last) = lower($1) AND lower(name_first) = lower($2)
+
+  pitcher_overview:
+    description: Given the pitcher id return the pitcher overview as a table showing type, count, percentage, avg release speed
+    kind: postgres-sql
+    parameters:
+    - description: pitcher id
+      name: pitcher_id
+      type: integer
+    source: statcast
+    statement: |
+      WITH PitchCounts AS (
+      SELECT
+          p.pitch_type,
+          COUNT(*) AS pitch_count,
+          AVG(p.release_speed) AS avg_release_speed,
+          MIN(p.release_speed) AS min_release_speed,
+          MAX(p.release_speed) AS max_release_speed
+      FROM
+          statcast_pitches AS p
+      WHERE
+          p.pitcher = $1
+      GROUP BY
+          p.pitch_type
+      )
+      SELECT
+          pa.pitch_type AS full_pitch_name,
+          pc.pitch_count,
+          ROUND(CAST((pc.pitch_count * 100.0) / SUM(pc.pitch_count) OVER () AS NUMERIC), 1) AS percentage,
+          ROUND(CAST(pc.avg_release_speed AS NUMERIC), 1) AS avg_release_speed,
+          ROUND(CAST(pc.min_release_speed AS NUMERIC), 1) AS min_release_speed,
+          ROUND(CAST(pc.max_release_speed AS NUMERIC), 1) AS max_release_speed
+      FROM
+          PitchCounts AS pc
+      LEFT JOIN
+          pitch_abbr AS pa ON pc.pitch_type = pa.pitch_abbr
+      ORDER BY
+          percentage DESC;
+
+  lookup_pitch_history:
+    description: Given the pitcher id and the batter id return the pitcher overview as a table showing type, count, percentage
+    kind: postgres-sql
+    parameters:
+    - description: picher id
+      name: pitcher_id
+      type: integer
+    - description: batter id
+      name: batter_id
+      type: integer
+    source: statcast
+    statement: |
+      SELECT
+        pa.pitch_type,
+        COUNT(sp.pitch_type) AS p_count,
+        ROUND((COUNT(sp.pitch_type) * 100.0) / (SELECT COUNT(*) FROM statcast_pitches WHERE pitcher = 477132 AND batter = 694192), 2) AS percentage
+      FROM
+          statcast_pitches AS sp
+      JOIN
+          pitch_abbr AS pa ON sp.pitch_type = pa.pitch_abbr
+      WHERE
+          sp.pitcher = $1 AND sp.batter = $2
+      GROUP BY
+          pa.pitch_type
+      ORDER BY
+          p_count DESC;
+
+  lookup_batter_history:
+    description: Given the pitcher id and the batter id return the outcoes as a table showing type, count, percentage
+    kind: postgres-sql
+    parameters:
+    - description: picher id
+      name: pitcher_id
+      type: integer
+    - description: batter id
+      name: batter_id
+      type: integer
+    source: statcast
+    statement: |
+      SELECT
+          events,
+          COUNT(events) AS event_count,
+          ROUND((COUNT(events) * 100.0) / (SELECT COUNT(*)
+          FROM statcast_pitches WHERE pitcher = $1 AND batter = $2 AND events != ''), 2) AS percentage
+      FROM
+          statcast_pitches
+      WHERE
+          pitcher = $1 AND batter = $2 AND events != ''
+      GROUP BY
+          events
+      ORDER BY
+          event_count DESC;
+
+  batter_vs_team:
+    description: Given the team abbreviation and the batter id return the event type, count and percentage as a table
+    kind: postgres-sql
+    parameters:
+    - description: team abbreviation
+      name: team_abbr
+      type: string
+    - description: batter id
+      name: batter_id
+      type: integer
+    source: statcast
+    statement: |
+      SELECT
+          events,
+          COUNT(events) AS event_count,
+          ROUND((COUNT(events) * 100.0) / (SELECT COUNT(*)
+          FROM statcast_pitches WHERE p_team = $1 AND batter =  $2 AND events != ''), 2) AS percentage
+      FROM
+          statcast_pitches
+      WHERE
+          p_team = $1 AND batter = $2 AND events != ''
+      GROUP BY
+          events
+      ORDER BY
+          event_count DESC;
+
+  batter_overview:
+    description: Given a batter id return the batter overview for the seachin
+    kind: postgres-sql
+    parameters:
+    - description: batter id
+      name: batter_id
+      type: integer
+    source: statcast
+    statement: |
+      SELECT events, COUNT(events) as results FROM statcast_pitches WHERE batter=$1 AND  events != '' GROUP BY events ORDER BY results DESC;
+
+  events_by_team:
+    description: Return the top 10 results for a an event by team given a team and and event in the list  catcher_interf double double_play field_error fielders_choice fielders_choice_out field_out force_out grounded_into_double_play hit_by_pitch home_run sac_bunt sac_bunt_double_play sac_fly sac_fly_double_play single strikeout strikeout_double_play triple triple_play truncated_pa walk 
+    kind: postgres-sql
+    parameters:
+    - description: event name
+      name: event
+      type: string
+    source: statcast
+    statement: |
+      SELECT b_team, count(events) AS results FROM statcast_pitches WHERE events=$1 AND  events != '' GROUP by b_team, events ORDER BY results DESC LIMIT 10;
+
+  events_by_batter:
+    description: Return the top 10 results for a an event by a batter given a team and and event in the list  catcher_interf double double_play field_error fielders_choice fielders_choice_out field_out force_out grounded_into_double_play hit_by_pitch home_run sac_bunt sac_bunt_double_play sac_fly sac_fly_double_play single strikeout strikeout_double_play triple triple_play truncated_pa walk 
+    kind: postgres-sql
+    parameters:
+    - description: event name
+      name: event
+      type: string
+    source: statcast
+    statement: |
+      SELECT
+        INITCAP(p.name_first) as name_first,
+        INITCAP(p.name_last) AS name_last,
+        COUNT(sp.events) AS event_count
+      FROM statcast_pitches AS sp
+      INNER JOIN players AS p
+        ON sp.batter = p.id
+      WHERE
+        sp.events = $1
+        AND sp.events != ''
+      GROUP BY
+        name_last,
+        name_first
+      ORDER BY
+        event_count DESC
+      LIMIT 10;
+
+  team_roster:
+    description: Return the names of all players on a team
+    kind: postgres-sql
+    parameters:
+    - description: team abbreviation
+      name: team
+      type: string
+    source: statcast
+    statement: |
+      SELECT DISTINCT
+        INITCAP(p.name_first) AS name_first,
+        INITCAP(p.name_last) AS name_last
+      FROM players AS p
+      INNER JOIN (
+        SELECT
+          batter AS player_id
+        FROM statcast_pitches
+        WHERE
+          b_team = $1 AND events != ''
+        UNION
+        SELECT
+          pitcher AS player_id
+        FROM statcast_pitches
+        WHERE
+          p_team = $1 AND events != ''
+      ) AS all_players
+        ON p.id = all_players.player_id
+      ORDER BY
+        name_last,
+        name_first;      
+
+toolsets:
+  query-players:
+    - lookup_player_by_lastname
+    - lookup_player_by_first_and_lastname
+    - pitcher_overview
+    - lookup_pitch_history
+    - lookup_batter_history
+    - batter_vs_team
+    - get_fun_notes_for_player
+    - batter_overview
+    - events_by_team
+    - events_by_batter
+    - team_roster

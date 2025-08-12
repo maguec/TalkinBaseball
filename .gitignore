@@ -1,0 +1,10 @@
+.venv/*
+models/__pycache__/*
+data/models/__pycache__/*
+generators/__pycache__/*
+__pycache__/*
+.env
+Agent/.env
+Agent/toolbox
+Agent/pitcher_data/__pycache__/*
+Agent/voice/__pycache__/*

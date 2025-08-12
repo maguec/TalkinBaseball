@@ -1,0 +1,14 @@
+[project]
+name = "talkinbaseball"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "dataclasses>=0.8",
+    "google-adk==1.10.0",
+    "psycopg2-binary>=2.9.10",
+    "pybaseball>=2.2.7",
+    "sqlalchemy>=2.0.42",
+    "toolbox-core>=0.4.0",
+]

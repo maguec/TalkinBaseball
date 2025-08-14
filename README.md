@@ -29,6 +29,15 @@ uv run load_players.py
 uv run load_players.py
 ```
 
+### Load Bigtable data
+```bash
+vim Makefile
+#replace project name with your own
+make btsetup
+
+```
+
+
 ### Configure toolbox
 
 ```bash

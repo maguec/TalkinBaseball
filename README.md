@@ -40,6 +40,7 @@ make
 # edit the sources in tools.yaml to match your environment
 # download the version for your os
 make runtoolbox
+```
 
 ### Run the ADK in another window
 

@@ -2,17 +2,55 @@
 
 ![map](./docs/diagram.png)
 
+## Prerequisites
+[uv](https://docs.astral.sh/uv/getting-started/installation/)
+
+
 ## Get Python setup and load the Data
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
 
-## Run locally
+## Load data
+
+### Create database
 
 ```bash
-export DATABASE_URL="postgresql+psycopg2://postgres:PASSWORD@localhost:5432/statcast"
-podman run  --rm --name talkinbaseball -e "POSTGRES_PASSWORD=PASSWORD" -e "POSTGRES_DB=statcast" -p 5432:5432 docker.io/postgres:16
+export DATABASE_URL="postgresql+psycopg2://postgres:PASSWORD@HOSTNAME:5432/postgres"
+psql ${DATABASE_URL=} 
+> create database statcast
 ```
+
+### Load data
+
+```bash
+export DATABASE_URL="postgresql+psycopg2://postgres:PASSWORD@HOSTNAME:5432/statcast"
+cd data
+uv run load_pitches.py
+uv run load_players.py
+uv run load_players.py
+```
+
+### Configure toolbox
+
+```bash
+cd Agent
+echo "GOOGLE_GENAI_USE_VERTEXAI=1" > .env
+echo "GOOGLE_CLOUD_PROJECT=MYPROJECTNAME" >> .env
+echo "GOOGLE_CLOUD_LOCATION=us-west1" >> .env
+make
+# edit the sources in tools.yaml to match your environment
+# download the version for your os
+make runtoolbox
+
+### Run the ADK in another window
+
+```bash
+cd Agent
+uv run adk web
+```
+
+
+
+```
+
+
+

@@ -1,5 +1,6 @@
 # Talkin Baseball
 
+![map](./docs/diagram.png)
 
 ## Get Python setup and load the Data
 

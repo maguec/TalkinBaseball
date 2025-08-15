@@ -15,5 +15,5 @@ btsetup: ## Spin up a single node bitable instance an populate
 	@gcloud bigtable materialized-views create fun_notes --instance=talkinbaseball  --query 'SELECT _key AS id, p["Notes"] AS notes, p["PlayerId"] AS player_id FROM profiles ORDER BY id, notes, player_id'
 
 btdelete: ## Shutdown the Spanner instance
-	@gcloud spanner instances delete useridentity
+	@gcloud bigtable instances delete talkinbaseball
 

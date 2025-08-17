@@ -1,0 +1,25 @@
+    digraph G {
+        node [shape=none, label="", fontcolor=white];
+        edge [fontcolor=yellow, color=yellow,fontsize=8, fontname=helvetica];
+        bgcolor=black;
+        rankdir=LR;
+        subgraph end_user {
+          User [image="./user-icon.png";label="\n\n\n\n\n\n\nEndUser"];
+        }
+        subgraph mcp_server {
+          MCP [image="./mcp-icon.png";label="\n\n\n\n\n\n\nToolbox"];
+        }
+        subgraph adk_server {
+          ADK [image="./adk-icon.png"; label="\n\n\n\n\n\n\nADK"];
+        }
+        subgraph adk_server {
+          BT [image="./bt-icon.png"; label="\n\n\n\n\n\n\nBigtable"];
+        }
+        subgraph adk_server {
+          AlloyDB [image="./alloy-icon.png"; label="\n\n\n\n\n\n\nAlloyDB"];
+        }
+        User -> ADK [label="  https"];
+        ADK -> MCP [label="  https"];
+        MCP -> BT [label="  grpc"];
+        MCP -> AlloyDB [label="  tcp"];
+    }

@@ -2,7 +2,7 @@
 
 ![map](./docs/diagram.png)
 
-[![Youtube Video](https://img.youtube.com/vi/CX0sb4FPm70/0.jpg)](https://www.youtube.com/watch?v=CX0sb4FPm70)
+![Youtube Video](https://www.youtube.com/watch?v=CX0sb4FPm70)
 
 ## Prerequisites
 [uv](https://docs.astral.sh/uv/getting-started/installation/)

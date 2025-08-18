@@ -3,6 +3,7 @@
 ![map](./docs/diagram.png)
 
 [Youtube Video](https://www.youtube.com/watch?v=CX0sb4FPm70)
+[Voice Commands Video](https://youtu.be/eWOjrhw76Co)
 
 ## Prerequisites
 [uv](https://docs.astral.sh/uv/getting-started/installation/)

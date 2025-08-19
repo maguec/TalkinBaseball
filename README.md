@@ -24,7 +24,7 @@ gcloud auth application-default login
 
 ```bash
 export DATABASE_URL="postgresql+psycopg2://postgres:PASSWORD@HOSTNAME:5432/postgres"
-psql ${DATABASE_URL=} 
+psql ${DATABASE_URL} 
 > create database statcast
 ```
 

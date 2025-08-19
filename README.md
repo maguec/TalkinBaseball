@@ -1,15 +1,24 @@
 # Talkin Baseball
 
-![map](./docs/diagram.png)
+Demo of building a chatbot pulling data from two separate datastores seamlessly.
 
-[Youtube Video](https://www.youtube.com/watch?v=CX0sb4FPm70)
-[Voice Commands Video](https://youtu.be/eWOjrhw76Co)
+![High Level Diagram](./docs/diagram.png)
+
+- [Youtube Video](https://www.youtube.com/watch?v=CX0sb4FPm70)
+- [Voice Commands Video](https://youtu.be/eWOjrhw76Co)
 
 ## Prerequisites
 [uv](https://docs.astral.sh/uv/getting-started/installation/)
+[gcloud](https://cloud.google.com/sdk/docs/install)
 
 
-## Get Python setup and load the Data
+## Get Account setup 
+
+```bash
+gcloud auth application-default login
+make instancecreate
+make loadschema
+```
 
 
 ## Load data
@@ -27,6 +36,7 @@ psql ${DATABASE_URL=}
 ```bash
 export DATABASE_URL="postgresql+psycopg2://postgres:PASSWORD@HOSTNAME:5432/statcast"
 cd data
+uv run grab_stats.py
 uv run load_pitches.py
 uv run load_players.py
 uv run load_players.py
@@ -37,7 +47,6 @@ uv run load_players.py
 vim Makefile
 #replace project name with your own
 make btsetup
-
 ```
 
 

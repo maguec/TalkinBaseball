@@ -16,10 +16,7 @@ Demo of building a chatbot pulling data from two separate datastores seamlessly.
 
 ```bash
 gcloud auth application-default login
-make instancecreate
-make loadschema
 ```
-
 
 ## Load data
 

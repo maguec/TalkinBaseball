@@ -8,8 +8,8 @@ Demo of building a chatbot pulling data from two separate datastores seamlessly.
 - [Voice Commands Video](https://youtu.be/eWOjrhw76Co)
 
 ## Prerequisites
-[uv](https://docs.astral.sh/uv/getting-started/installation/)
-[gcloud](https://cloud.google.com/sdk/docs/install)
+- [uv](https://docs.astral.sh/uv/getting-started/installation/)
+- [gcloud](https://cloud.google.com/sdk/docs/install)
 
 
 ## Get Account setup 
